@@ -1,6 +1,6 @@
-const rows = 5;
-const columns = 5;
-const mines = 15;
+const rows = 10;
+const columns = 10;
+const mines = 8;
 const revealedKeys = new Map();
 const gameContainer = document.querySelector("#grid");
 
@@ -17,7 +17,7 @@ function drawButtons() {
       cell.setAttribute("data-location", key);
 
       cell.style.backgroundColor = "lightgray";
-      cell.onclick = () => revealButton(key);
+      cell.onclick = () => propagateButtons(key, new Set());
       cell.style.borderWidth = "5px";
       cell.style.borderColor = "white";
       cell.style.height = "40px";
@@ -37,14 +37,23 @@ function updateButtons() {
     for (let j = 0; j < columns; j++) {
       const key = `${i} x ${j}`;
       if (cellData[key] !== "💣") {
-        cellData[key] = calculateNeighbourCount(key);
+        cellData[key] = calculateMineCountInNeighbours(key);
       }
     }
   }
 }
 
-function calculateNeighbourCount(key) {
-  let mineCount = 0;
+function isInBounds([x, y]) {
+  if (x < 0 || y < 0) {
+    return false;
+  }
+  if (x >= rows || y >= columns) {
+    return false;
+  }
+  return true;
+}
+
+function getNeighbours(key) {
   const options = [
     [1, 0],
     [-1, 0],
@@ -56,11 +65,17 @@ function calculateNeighbourCount(key) {
     [-1, -1],
   ];
 
-  const coorX = Number(key.split(" ")[0]);
-  const coorY = Number(key.split(" ")[2]);
-  options.forEach((option) => {
-    const calculatedKey = `${coorX + option[0]} x ${coorY + option[1]}`;
-    if (cellData[calculatedKey] === "💣") {
+  const [coorX, _, coorY] = key.split(" ");
+  return options
+    .map(([x, y]) => [Number(coorX) + x, Number(coorY) + y])
+    .filter(isInBounds)
+    .map(([x, y]) => `${x} x ${y}`);
+}
+
+function calculateMineCountInNeighbours(key) {
+  let mineCount = 0;
+  getNeighbours(key).forEach((neightbour) => {
+    if (cellData[neightbour] === "💣") {
       mineCount++;
     }
   });
@@ -88,6 +103,20 @@ function revealButton(key) {
     selectedButton.style.color = "red";
   } else if (cellData[key] >= 5) {
     selectedButton.style.color = "darkred";
+  }
+}
+
+function propagateButtons(key, visited) {
+  visited.add(key);
+  revealButton(key);
+
+  const isEmpty = cellData[key] === 0;
+  if (isEmpty) {
+    getNeighbours(key).forEach((neighbour) => {
+      if (!visited.has(neighbour)) {
+        propagateButtons(neighbour, visited);
+      }
+    });
   }
 }
 
