@@ -1,7 +1,7 @@
 const rows = 10;
 const columns = 10;
 const mines = 8;
-const revealedKeys = new Map();
+const flaggedCells = new Set();
 const gameContainer = document.querySelector("#grid");
 
 const cellData = {};
@@ -17,12 +17,15 @@ function drawButtons() {
       cell.setAttribute("data-location", key);
 
       cell.style.backgroundColor = "lightgray";
-      cell.onclick = () => propagateButtons(key, new Set());
+      cell.onclick = () => handleButtonClick(key, new Set());
+      cell.oncontextmenu = () => setFlag(key);
       cell.style.borderWidth = "5px";
       cell.style.borderColor = "white";
+      cell.style.color = "black";
       cell.style.height = "40px";
       cell.style.width = "40px";
-      cell.style.fontSize = "30px";
+      cell.style.fontSize = "25px";
+      cell.style.fontSize = "25px";
       cell.style.fontFamily = "monospace";
 
       row.appendChild(cell);
@@ -41,6 +44,20 @@ function updateButtons() {
       }
     }
   }
+}
+
+function setFlag(key) {
+  const selector = `button[data-location='${key}']`;
+  const selectedButton = document.querySelector(selector);
+
+  if (flaggedCells.has(key)) {
+    flaggedCells.delete(key);
+    selectedButton.textContent = "";
+  } else {
+    flaggedCells.add(key);
+    selectedButton.textContent = "🚩";
+  }
+  return false;
 }
 
 function isInBounds([x, y]) {
@@ -104,6 +121,13 @@ function revealButton(key) {
   } else if (cellData[key] >= 5) {
     selectedButton.style.color = "darkred";
   }
+}
+
+function handleButtonClick(key) {
+  if (flaggedCells.has(key)) {
+    return;
+  }
+  propagateButtons(key, new Set());
 }
 
 function propagateButtons(key, visited) {
