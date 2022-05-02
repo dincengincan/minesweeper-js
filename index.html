@@ -2,23 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       body {
-        text-align: center;
-        background-color: black;
+        background-color: gray;
       }
       * {
         font-weight: bold;
+      }
+      #grid {
+        background-color: lightgray;
+        display: inline-block;
+      }
+      #restart {
+        margin: 10px;
+        padding: 10px;
+        display: none;
       }
     </style>
   </head>
   <body>
     <h1>Minesweeper</h1>
-
     <div id="grid"></div>
+    <br />
     <button id="restart">Restart</button>
 
     <script src="index.js"></script>

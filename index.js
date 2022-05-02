@@ -1,13 +1,10 @@
 const rows = 10;
 const columns = 10;
-const mines = 8;
+const mines = 4;
 const flaggedCells = new Set();
+const generatedMines = new Set();
 const gameContainer = document.querySelector("#grid");
 const restartButton = document.querySelector("#restart");
-restartButton.style.margin = "10px";
-restartButton.style.display = "none";
-restartButton.onclick = startGame;
-let generatedMines = [];
 
 let cellData = {};
 
@@ -23,7 +20,7 @@ function startGame() {
   }
 
   cellData = {};
-  generatedMines = [];
+  generatedMines.clear();
   flaggedCells.clear();
 
   generateMine();
@@ -131,6 +128,8 @@ function revealButton(key) {
   selectedButton.textContent = cellData[key] !== 0 ? cellData[key] : "";
   selectedButton.disabled = true;
   selectedButton.style.border = "1px solid gray";
+  flaggedCells.has(key) && flaggedCells.delete(key);
+
   if (cellData[key] === "💣") {
     selectedButton.style.backgroundColor = "red";
     endGame(key);
@@ -171,15 +170,15 @@ function propagateButtons(key, visited) {
 }
 
 function generateMine() {
-  while (generatedMines.length < mines) {
+  while (generatedMines.size < mines) {
     const randomX = Math.floor(Math.random() * rows);
     const randomY = Math.floor(Math.random() * columns);
     const key = `${randomX} x ${randomY}`;
-    if (generatedMines.some((mine) => key === mine)) {
+    if (generatedMines.has(key)) {
       continue;
     } else {
       cellData[key] = "💣";
-      generatedMines.push(key);
+      generatedMines.add(key);
     }
   }
 }
@@ -188,10 +187,28 @@ function endGame(key) {
   for (let mine of generatedMines) {
     const selector = `button[data-location='${mine}']`;
     const selectedButton = document.querySelector(selector);
-    selectedButton.textContent = cellData[key];
+
+    if (flaggedCells.has(mine)) {
+      continue;
+    } else {
+      selectedButton.textContent = cellData[key];
+    }
   }
+
+  for (let flagged of flaggedCells) {
+    const selector = `button[data-location='${flagged}']`;
+    const selectedButton = document.querySelector(selector);
+
+    if (generatedMines.has(flagged)) {
+      continue;
+    } else {
+      selectedButton.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+    }
+  }
+
   gameContainer.style.pointerEvents = "none";
-  restartButton.style.display = "block";
+  restartButton.style.display = "inline-block";
+  restartButton.onclick = startGame;
 }
 
 drawButtons();
