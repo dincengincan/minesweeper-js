@@ -3,8 +3,33 @@ const columns = 10;
 const mines = 8;
 const flaggedCells = new Set();
 const gameContainer = document.querySelector("#grid");
+const restartButton = document.querySelector("#restart");
+restartButton.style.margin = "10px";
+restartButton.style.display = "none";
+restartButton.onclick = startGame;
+let generatedMines = [];
 
-const cellData = {};
+let cellData = {};
+
+function startGame() {
+  for (let key in cellData) {
+    const selector = `button[data-location='${key}']`;
+    const selectedButton = document.querySelector(selector);
+    selectedButton.textContent = "";
+    selectedButton.style.border = "5px outset white";
+    selectedButton.style.backgroundColor = "lightgray";
+    selectedButton.disabled = false;
+    restartButton.style.display = "none";
+  }
+
+  cellData = {};
+  generatedMines = [];
+  flaggedCells.clear();
+
+  generateMine();
+  updateButtons();
+  gameContainer.style.pointerEvents = "all";
+}
 
 function drawButtons() {
   for (let i = 0; i < rows; i++) {
@@ -16,9 +41,9 @@ function drawButtons() {
       const key = `${i} x ${j}`;
       cell.setAttribute("data-location", key);
 
-      cell.style.backgroundColor = "lightgray";
       cell.onclick = () => handleButtonClick(key, new Set());
       cell.oncontextmenu = () => setFlag(key);
+      cell.style.backgroundColor = "lightgray";
       cell.style.borderWidth = "5px";
       cell.style.borderColor = "white";
       cell.style.color = "black";
@@ -108,6 +133,7 @@ function revealButton(key) {
   selectedButton.style.border = "1px solid gray";
   if (cellData[key] === "💣") {
     selectedButton.style.backgroundColor = "red";
+    endGame(key);
   } else if (cellData[key] === 1) {
     selectedButton.style.color = "blue";
   } else if (cellData[key] === 2) {
@@ -145,11 +171,10 @@ function propagateButtons(key, visited) {
 }
 
 function generateMine() {
-  const generatedMines = [];
   while (generatedMines.length < mines) {
     const randomX = Math.floor(Math.random() * rows);
     const randomY = Math.floor(Math.random() * columns);
-    key = `${randomX} x ${randomY}`;
+    const key = `${randomX} x ${randomY}`;
     if (generatedMines.some((mine) => key === mine)) {
       continue;
     } else {
@@ -158,4 +183,15 @@ function generateMine() {
     }
   }
 }
+
+function endGame(key) {
+  for (let mine of generatedMines) {
+    const selector = `button[data-location='${mine}']`;
+    const selectedButton = document.querySelector(selector);
+    selectedButton.textContent = cellData[key];
+  }
+  gameContainer.style.pointerEvents = "none";
+  restartButton.style.display = "block";
+}
+
 drawButtons();
