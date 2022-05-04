@@ -160,7 +160,6 @@ function revealButton(key) {
     selectedButton.style.color = "darkred";
   }
   revealedCells.add(key);
-  console.log({ revealedCells, generatedMines });
   if (hasWin()) {
     endGame(gameResults.win);
   }
