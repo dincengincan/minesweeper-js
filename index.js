@@ -31,6 +31,7 @@ function startGame() {
   gameResultIndicator.textContent = "";
   generatedMines.clear();
   flaggedCells.clear();
+  revealedCells.clear();
 
   generateMine();
   updateButtons();
