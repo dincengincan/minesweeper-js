@@ -1,17 +1,24 @@
-const rows = 10;
-const columns = 10;
-const mines = 4;
+const rows = 3;
+const columns = 3;
+const mines = 2;
+const gameResults = {
+  lose: "lose",
+  win: "win",
+};
+
 const flaggedCells = new Set();
 const generatedMines = new Set();
+const revealedCells = new Set();
+let cellData = {};
+
 const gameContainer = document.querySelector("#grid");
 const restartButton = document.querySelector("#restart");
-
-let cellData = {};
+const gameResultIndicator = document.querySelector("#game-result");
 
 function startGame() {
   for (let key in cellData) {
-    const selector = `button[data-location='${key}']`;
-    const selectedButton = document.querySelector(selector);
+    const selectedButton = buttonSelector(key);
+
     selectedButton.textContent = "";
     selectedButton.style.border = "5px outset white";
     selectedButton.style.backgroundColor = "lightgray";
@@ -20,6 +27,7 @@ function startGame() {
   }
 
   cellData = {};
+  gameResultIndicator.textContent = "";
   generatedMines.clear();
   flaggedCells.clear();
 
@@ -69,8 +77,7 @@ function updateButtons() {
 }
 
 function setFlag(key) {
-  const selector = `button[data-location='${key}']`;
-  const selectedButton = document.querySelector(selector);
+  const selectedButton = buttonSelector(key);
 
   if (flaggedCells.has(key)) {
     flaggedCells.delete(key);
@@ -122,8 +129,7 @@ function calculateMineCountInNeighbours(key) {
 }
 
 function revealButton(key) {
-  const selector = `button[data-location='${key}']`;
-  const selectedButton = document.querySelector(selector);
+  const selectedButton = buttonSelector(key);
 
   selectedButton.textContent = cellData[key] !== 0 ? cellData[key] : "";
   selectedButton.disabled = true;
@@ -132,19 +138,31 @@ function revealButton(key) {
 
   if (cellData[key] === "💣") {
     selectedButton.style.backgroundColor = "red";
-    endGame(key);
-  } else if (cellData[key] === 1) {
+    endGame(gameResults.lose, key);
+    return;
+  }
+  if (cellData[key] === 1) {
     selectedButton.style.color = "blue";
-  } else if (cellData[key] === 2) {
+  }
+  if (cellData[key] === 2) {
     selectedButton.style.color = "darkblue";
-  } else if (cellData[key] === 3) {
+  }
+  if (cellData[key] === 3) {
     selectedButton.style.color = "green";
-  } else if (cellData[key] === 3) {
+  }
+  if (cellData[key] === 3) {
     selectedButton.style.color = "darkgreen";
-  } else if (cellData[key] === 4) {
+  }
+  if (cellData[key] === 4) {
     selectedButton.style.color = "red";
-  } else if (cellData[key] >= 5) {
+  }
+  if (cellData[key] >= 5) {
     selectedButton.style.color = "darkred";
+  }
+  revealedCells.add(key);
+  console.log({ revealedCells, generatedMines });
+  if (hasWin()) {
+    endGame(gameResults.win);
   }
 }
 
@@ -169,6 +187,10 @@ function propagateButtons(key, visited) {
   }
 }
 
+function hasWin() {
+  return revealedCells.size + generatedMines.size === rows * columns;
+}
+
 function generateMine() {
   while (generatedMines.size < mines) {
     const randomX = Math.floor(Math.random() * rows);
@@ -183,32 +205,47 @@ function generateMine() {
   }
 }
 
-function endGame(key) {
-  for (let mine of generatedMines) {
-    const selector = `button[data-location='${mine}']`;
-    const selectedButton = document.querySelector(selector);
+function endGame(gameResult, key) {
+  if (gameResult === gameResults.lose && key) {
+    for (let mine of generatedMines) {
+      const selectedButton = buttonSelector(mine);
 
-    if (flaggedCells.has(mine)) {
-      continue;
-    } else {
-      selectedButton.textContent = cellData[key];
+      if (flaggedCells.has(mine)) {
+        continue;
+      } else {
+        selectedButton.textContent = cellData[key];
+      }
     }
+
+    for (let flagged of flaggedCells) {
+      const selectedButton = buttonSelector(flagged);
+
+      if (generatedMines.has(flagged)) {
+        continue;
+      } else {
+        selectedButton.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+      }
+    }
+    gameResultIndicator.textContent = "LOSE";
+    gameResultIndicator.style.color = "red";
   }
-
-  for (let flagged of flaggedCells) {
-    const selector = `button[data-location='${flagged}']`;
-    const selectedButton = document.querySelector(selector);
-
-    if (generatedMines.has(flagged)) {
-      continue;
-    } else {
-      selectedButton.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+  if (gameResult === gameResults.win) {
+    for (let mine of generatedMines) {
+      const selectedButton = buttonSelector(mine);
+      selectedButton.textContent = "🚩";
     }
+    gameResultIndicator.textContent = "WIN";
+    gameResultIndicator.style.color = "green";
   }
 
   gameContainer.style.pointerEvents = "none";
   restartButton.style.display = "inline-block";
   restartButton.onclick = startGame;
+}
+
+function buttonSelector(key) {
+  const selector = `button[data-location='${key}']`;
+  return document.querySelector(selector);
 }
 
 drawButtons();
