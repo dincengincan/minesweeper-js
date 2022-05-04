@@ -6,10 +6,10 @@ The main challenge of this clone was to cover all the `core functionalities` fro
 
 If I decide to continue this project game in the future, here are the tasks:
 
-[] countdown
-[] difficulty options
-[] smiley face to indicate game result
-[] fix UI and make it more mobile friendly
+- [ ] countdown
+- [ ] difficulty options
+- [ ] smiley face to indicate game result
+- [ ] fix UI and make it more mobile friendly
 
 ## Demo
 
