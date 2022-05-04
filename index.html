@@ -2,8 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minesweeper</title>
     <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+      }
+
       * {
         font-weight: bold;
       }
@@ -19,6 +24,9 @@
   </head>
   <body>
     <h1>Minesweeper</h1>
+    <h3>Use left click to reveal the cell.</h3>
+    <h3>Use right click to mark the cell with flag.</h3>
+    <h3 id="flag-count"></h3>
     <div id="grid"></div>
     <br />
     <h2 id="game-result"></h2>

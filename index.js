@@ -1,6 +1,6 @@
-const rows = 3;
-const columns = 3;
-const mines = 2;
+const rows = 10;
+const columns = 10;
+const mines = 10;
 const gameResults = {
   lose: "lose",
   win: "win",
@@ -14,6 +14,7 @@ let cellData = {};
 const gameContainer = document.querySelector("#grid");
 const restartButton = document.querySelector("#restart");
 const gameResultIndicator = document.querySelector("#game-result");
+const flagCountIndicator = document.querySelector("#flag-count");
 
 function startGame() {
   for (let key in cellData) {
@@ -37,6 +38,7 @@ function startGame() {
 }
 
 function drawButtons() {
+  flagCountIndicator.textContent = `Flag count: ${flaggedCells.size}/${mines}`;
   for (let i = 0; i < rows; i++) {
     const row = document.createElement("div");
     row.style.display = "flex";
@@ -83,9 +85,12 @@ function setFlag(key) {
     flaggedCells.delete(key);
     selectedButton.textContent = "";
   } else {
-    flaggedCells.add(key);
-    selectedButton.textContent = "🚩";
+    if (flaggedCells.size < mines) {
+      flaggedCells.add(key);
+      selectedButton.textContent = "🚩";
+    }
   }
+  flagCountIndicator.textContent = `Flag count: ${flaggedCells.size}/${mines}`;
   return false;
 }
 
